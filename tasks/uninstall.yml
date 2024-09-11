@@ -1,0 +1,25 @@
+---
+
+- name: Check existence of Readeck systemd service
+  ansible.builtin.stat:
+    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ readeck_identifier }}.service"
+  register: readeck_service_stat
+
+- when: readeck_service_stat.stat.exists | bool
+  block:
+    - name: Ensure Readeck systemd service is stopped
+      ansible.builtin.service:
+        name: "{{ readeck_identifier }}"
+        state: stopped
+        enabled: false
+        daemon_reload: true
+
+    - name: Ensure Readeck systemd service does not exists
+      ansible.builtin.file:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ readeck_identifier }}.service"
+        state: absent
+
+    - name: Ensure Readeck path doesn't exist
+      ansible.builtin.file:
+        path: "{{ readeck_base_path }}"
+        state: absent

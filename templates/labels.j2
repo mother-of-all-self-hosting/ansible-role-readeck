@@ -1,0 +1,52 @@
+{% if readeck_container_labels_traefik_enabled %}
+traefik.enable=true
+
+{% if readeck_container_labels_traefik_docker_network %}
+traefik.docker.network={{ readeck_container_labels_traefik_docker_network }}
+{% endif %}
+
+{% set middlewares = [] %}
+
+{% if readeck_container_labels_traefik_path_prefix != '/' %}
+traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectregex.regex=^({{ readeck_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
+{% set middlewares = middlewares + [readeck_identifier + '-slashless-redirect'] %}
+{% endif %}
+
+{#
+	Intentionally not adding a stripPrefix middleware.
+	readeck seems to serve itself under the same prefix it sees in the ND_BASEURL environment variable.
+#}
+
+{% if readeck_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
+{% for name, value in readeck_container_labels_traefik_additional_request_headers.items() %}
+traefik.http.middlewares.{{ readeck_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}
+{% endfor %}
+{% set middlewares = middlewares + [readeck_identifier + '-add-request-headers'] %}
+{% endif %}
+
+{% if readeck_container_labels_traefik_additional_response_headers.keys() | length > 0 %}
+{% for name, value in readeck_container_labels_traefik_additional_response_headers.items() %}
+traefik.http.middlewares.{{ readeck_identifier }}-add-response-headers.headers.customresponseheaders.{{ name }}={{ value }}
+{% endfor %}
+{% set middlewares = middlewares + [readeck_identifier + '-add-response-headers'] %}
+{% endif %}
+
+traefik.http.routers.{{ readeck_identifier }}.rule={{ readeck_container_labels_traefik_rule }}
+{% if readeck_container_labels_traefik_priority | int > 0 %}
+traefik.http.routers.{{ readeck_identifier }}.priority={{ readeck_container_labels_traefik_priority }}
+{% endif %}
+traefik.http.routers.{{ readeck_identifier }}.service={{ readeck_identifier }}
+{% if middlewares | length > 0 %}
+traefik.http.routers.{{ readeck_identifier }}.middlewares={{ middlewares | join(',') }}
+{% endif %}
+traefik.http.routers.{{ readeck_identifier }}.entrypoints={{ readeck_container_labels_traefik_entrypoints }}
+traefik.http.routers.{{ readeck_identifier }}.tls={{ readeck_container_labels_traefik_tls | to_json }}
+{% if readeck_container_labels_traefik_tls %}
+traefik.http.routers.{{ readeck_identifier }}.tls.certResolver={{ readeck_container_labels_traefik_tls_certResolver }}
+{% endif %}
+
+traefik.http.services.{{ readeck_identifier }}.loadbalancer.server.port=8000
+{% endif %}
+
+{{ readeck_container_labels_additional_labels }}

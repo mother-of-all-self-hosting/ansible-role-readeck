@@ -1,0 +1,44 @@
+---
+
+- name: Ensure Readeck paths exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0700
+    owner: "{{ readeck_uid }}"
+    group: "{{ readeck_gid }}"
+  with_items:
+    - "{{ readeck_base_path }}"
+    - "{{ readeck_data_path }}"
+
+- name: Ensure Readeck support files installed
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/{{ item }}.j2"
+    dest: "{{ readeck_base_path }}/{{ item }}"
+    mode: 0600
+    owner: "{{ readeck_uid }}"
+    group: "{{ readeck_gid }}"
+  with_items:
+    - env
+    - labels
+
+- name: Ensure Readeck container image is pulled
+  community.docker.docker_image:
+    name: "{{ readeck_container_image }}"
+    source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
+    force_source: "{{ readeck_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else readeck_container_image_force_pull }}"
+  register: result
+  retries: "{{ devture_playbook_help_container_retries_count }}"
+  delay: "{{ devture_playbook_help_container_retries_delay }}"
+  until: result is not failed
+
+- name: Ensure Readeck container network is created
+  community.general.docker_network:
+    name: "{{ readeck_container_network }}"
+    driver: bridge
+
+- name: Ensure Readeck systemd service is present
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/systemd/readeck.service.j2"
+    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ readeck_identifier }}.service"

@@ -1,0 +1,51 @@
+#jinja2: lstrip_blocks: "True"
+[Unit]
+Description=Readeck ({{ readeck_identifier }})
+{% for service in readeck_systemd_required_services_list %}
+Requires={{ service }}
+After={{ service }}
+{% endfor %}
+DefaultDependencies=no
+
+[Service]
+Type=simple
+Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
+
+{# We mount a tmpfs at /tmp to allow readeck migrations to run. #}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
+			--rm \
+			--name={{ readeck_identifier }} \
+			--log-driver=none \
+			--network={{ readeck_container_network }} \
+			{% if readeck_container_http_bind_port %}
+			-p {{ readeck_container_http_bind_port }}:{{ readeck_container_http_port }} \
+			{% endif %}
+			--env-file={{ readeck_env_path }} \
+			--label-file={{ readeck_base_path }}/labels \
+			--health-interval={{ readeck_container_health_interval }} \
+			--mount type=bind,src={{ readeck_data_path }},dst=/readeck \
+			{% for volume in readeck_container_additional_volumes %}
+			--mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
+			{% endfor %}
+			{% for arg in readeck_container_extra_arguments %}
+			{{ arg }} \
+			{% endfor %}
+			{{ readeck_container_image }}
+
+{% for network in readeck_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ readeck_identifier }}
+{% endfor %}
+
+ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ readeck_identifier }}
+
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
+
+Restart=always
+RestartSec=30
+SyslogIdentifier={{ readeck_identifier }}
+
+[Install]
+WantedBy=multi-user.target
