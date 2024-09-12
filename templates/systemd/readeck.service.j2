@@ -13,11 +13,13 @@ Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
 
-{# We mount a tmpfs at /tmp to allow readeck migrations to run. #}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--rm \
 			--name={{ readeck_identifier }} \
 			--log-driver=none \
+			--user={{ readeck_uid }}:{{ readeck_gid }} \
+			--read-only
+			--cap-drop=ALL \
 			--network={{ readeck_container_network }} \
 			{% if readeck_container_http_bind_port %}
 			-p {{ readeck_container_http_bind_port }}:{{ readeck_container_http_port }} \
