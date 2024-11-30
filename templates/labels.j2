@@ -13,11 +13,6 @@ traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectreg
 {% set middlewares = middlewares + [readeck_identifier + '-slashless-redirect'] %}
 {% endif %}
 
-{#
-	Intentionally not adding a stripPrefix middleware.
-	readeck seems to serve itself under the same prefix it sees in the ND_BASEURL environment variable.
-#}
-
 {% if readeck_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
 {% for name, value in readeck_container_labels_traefik_additional_request_headers.items() %}
 traefik.http.middlewares.{{ readeck_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}

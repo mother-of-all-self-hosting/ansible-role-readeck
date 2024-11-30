@@ -63,7 +63,7 @@ readeck_container_labels_traefik_tls_certResolver: default  # noqa var-naming
 # To add your own custom request headers, use `readeck_container_labels_traefik_additional_response_headers_custom`
 readeck_container_labels_traefik_additional_request_headers: "{{ readeck_container_labels_traefik_additional_request_headers_auto | combine(readeck_container_labels_traefik_additional_request_headers_custom) }}"
 readeck_container_labels_traefik_additional_request_headers_auto: {}
-readeck_container_labels_traefik_additional_request_headers_custom: {}
+readeck_container_labels_traefik_additional_request_headers_custom: {'X-Clacks-Overhead': GNU Terry Pratchett}
 
 # Controls which additional headers to attach to all HTTP responses.
 # To add your own custom response headers, use `readeck_container_labels_traefik_additional_response_headers_custom`
