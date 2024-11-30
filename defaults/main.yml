@@ -63,7 +63,7 @@ readeck_container_labels_traefik_tls_certResolver: default  # noqa var-naming
 # To add your own custom request headers, use `readeck_container_labels_traefik_additional_response_headers_custom`
 readeck_container_labels_traefik_additional_request_headers: "{{ readeck_container_labels_traefik_additional_request_headers_auto | combine(readeck_container_labels_traefik_additional_request_headers_custom) }}"
 readeck_container_labels_traefik_additional_request_headers_auto: {}
-readeck_container_labels_traefik_additional_request_headers_custom: {'X-Clacks-Overhead': GNU Terry Pratchett}
+readeck_container_labels_traefik_additional_request_headers_custom: {}
 
 # Controls which additional headers to attach to all HTTP responses.
 # To add your own custom response headers, use `readeck_container_labels_traefik_additional_response_headers_custom`
@@ -78,7 +78,7 @@ readeck_container_labels_traefik_additional_response_headers_auto: |
     | combine ({'Permission-Policy': readeck_http_header_content_permission_policy} if readeck_http_header_content_permission_policy else {})
     | combine ({'Strict-Transport-Security': readeck_http_header_strict_transport_security} if readeck_http_header_strict_transport_security and readeck_container_labels_traefik_tls else {})
   }}
-readeck_container_labels_traefik_additional_response_headers_custom: {}
+readeck_container_labels_traefik_additional_response_headers_custom: {'X-Clacks-Overhead': GNU Terry Pratchett}
 
 # readeck_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
 # See `../templates/labels.j2` for details.
