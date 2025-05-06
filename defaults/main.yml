@@ -9,7 +9,7 @@ readeck_identifier: readeck
 readeck_uid: ''
 readeck_gid: ''
 
-readeck_version: 0.18.0
+readeck_version: 0.18.1
 
 readeck_scheme: https
 
