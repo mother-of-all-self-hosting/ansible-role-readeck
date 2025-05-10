@@ -1,4 +1,19 @@
 ---
+
+- name: (Deprecation) Catch and report renamed settings
+  ansible.builtin.fail:
+    msg: >-
+      Your configuration contains a variable, which now has a different name.
+      Please change your configuration to rename the variable (`{{ item.old }}` -> `{{ item.new }}`).
+  when: "item.old in vars"
+  with_items:
+    - {'old': 'readeck_systemd_required_systemd_services_list_default', 'new': 'readeck_systemd_required_services_list_default'}
+    - {'old': 'readeck_systemd_required_systemd_services_list_auto', 'new': 'readeck_systemd_required_services_list_auto'}
+    - {'old': 'readeck_systemd_required_systemd_services_list_custom', 'new': 'readeck_systemd_required_services_list_custom'}
+    - {'old': 'readeck_systemd_wanted_systemd_services_list_default', 'new': 'readeck_systemd_wanted_services_list_default'}
+    - {'old': 'readeck_systemd_wanted_systemd_services_list_auto', 'new': 'readeck_systemd_wanted_services_list_auto'}
+    - {'old': 'readeck_systemd_wanted_systemd_services_list_custom', 'new': 'readeck_systemd_wanted_services_list_custom'}
+
 - name: Fail if required Readeck settings not defined
   ansible.builtin.fail:
     msg: >
@@ -16,9 +31,10 @@
     - {'name': 'readeck_container_labels_traefik_compression_middleware_name', when: "{{ readeck_container_labels_traefik_compression_middleware_enabled }}"}
 
 
-- when: readeck_container_labels_traefik_enabled | bool
+- name: Validate Readeck Analytics Traefik configuration
+  when: readeck_container_labels_traefik_enabled | bool
   block:
-    - name: Fail if required Readeck Traefik settings not defined
+    - name: Fail if required readeck Analytics Traefik settings not defined
       ansible.builtin.fail:
         msg: >-
           You need to define a required configuration setting (`{{ item }}`).
@@ -35,3 +51,11 @@
         msg: >-
           readeck_container_labels_traefik_path_prefix (`{{ readeck_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/readeck`).
       when: "readeck_container_labels_traefik_path_prefix != '/' and readeck_container_labels_traefik_path_prefix[-1] == '/'"
+
+    - name: Fail if readeck_path_prefix is anything other than /
+      ansible.builtin.fail:
+        msg: >-
+          `readeck_path_prefix` must be set to `/`.
+          See the comments for the `readeck_path_prefix` variable in `defaults/main.yml`.
+          Hosting readeck at a subdirectory may or may not work as expected - it will most likely require additional work.
+      when: "readeck_path_prefix != '/'"
