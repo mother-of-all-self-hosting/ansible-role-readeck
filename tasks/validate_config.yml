@@ -20,16 +20,12 @@
       You need to define a required configuration setting (`{{ item }}`).
   when: "vars[item] == ''"
   with_items:
-    - {'name': 'readeck_identifier', when: true}
-    - {'name': 'readeck_uid', when: true}
-    - {'name': 'readeck_gid', when: true}
-    - {'name': 'readeck_hostname', when: true}
-    - {'name': 'readeck_path_prefix', when: true}
-    - {'name': 'readeck_container_network', when: true}
-    - {'name': 'readeck_database_hostname', when: true}
-    - {'name': 'readeck_database_password', when: true}
-    - {'name': 'readeck_container_labels_traefik_compression_middleware_name', when: "{{ readeck_container_labels_traefik_compression_middleware_enabled }}"}
-
+    - readeck_identifier
+    - readeck_uid
+    - readeck_gid
+    - readeck_hostname
+    - readeck_path_prefix
+    - readeck_container_network
 
 - name: Validate Readeck Analytics Traefik configuration
   when: readeck_container_labels_traefik_enabled | bool
