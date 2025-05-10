@@ -5,12 +5,16 @@ Description=Readeck ({{ readeck_identifier }})
 Requires={{ service }}
 After={{ service }}
 {% endfor %}
+{% for service in readeck_systemd_wanted_services_list %}
+Wants={{ service }}
+{% endfor %}
 DefaultDependencies=no
+
 
 [Service]
 Type=simple
 Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
-ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
+ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
 
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
@@ -18,22 +22,12 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--name={{ readeck_identifier }} \
 			--log-driver=none \
 			--user={{ readeck_uid }}:{{ readeck_gid }} \
-			--read-only \
 			--cap-drop=ALL \
 			--network={{ readeck_container_network }} \
-			{% if readeck_container_http_bind_port %}
-			-p {{ readeck_container_http_bind_port }}:{{ readeck_container_http_port }} \
-			{% endif %}
 			--env-file={{ readeck_env_path }} \
 			--label-file={{ readeck_base_path }}/labels \
 			--health-interval={{ readeck_container_health_interval }} \
 			--mount type=bind,src={{ readeck_data_path }},dst=/readeck \
-			{% for volume in readeck_container_additional_volumes %}
-			--mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
-			{% endfor %}
-			{% for arg in readeck_container_extra_arguments %}
-			{{ arg }} \
-			{% endfor %}
 			{{ readeck_container_image }}
 
 {% for network in readeck_container_additional_networks %}
@@ -42,7 +36,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network conne
 
 ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ readeck_identifier }}
 
-ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop --time={{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ readeck_identifier }} 2>/dev/null || true'
 ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
 
 Restart=always
