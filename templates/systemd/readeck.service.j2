@@ -24,7 +24,6 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--user={{ readeck_uid }}:{{ readeck_gid }} \
 			--cap-drop=ALL \
 			--network={{ readeck_container_network }} \
-			--env-file={{ readeck_env_path }} \
 			--label-file={{ readeck_base_path }}/labels \
 			--health-interval={{ readeck_container_health_interval }} \
 			--mount type=bind,src={{ readeck_data_path }},dst=/readeck \
