@@ -7,24 +7,25 @@ traefik.docker.network={{ readeck_container_labels_traefik_docker_network }}
 
 {% set middlewares = [] %}
 
+{% if readeck_container_labels_traefik_compression_middleware_enabled %}
+{% set middlewares = middlewares + [readeck_container_labels_traefik_compression_middleware_name] %}
+{% endif %}
+
 {% if readeck_container_labels_traefik_path_prefix != '/' %}
-traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectregex.regex=^({{ readeck_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectregex.regex=({{ readeck_container_labels_traefik_path_prefix | quote }})$
 traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
 {% set middlewares = middlewares + [readeck_identifier + '-slashless-redirect'] %}
 {% endif %}
 
-{% if readeck_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
-{% for name, value in readeck_container_labels_traefik_additional_request_headers.items() %}
-traefik.http.middlewares.{{ readeck_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}
-{% endfor %}
-{% set middlewares = middlewares + [readeck_identifier + '-add-request-headers'] %}
-{% endif %}
+{#
+	Intentionally not adding a stripPrefix middleware.
+#}
 
 {% if readeck_container_labels_traefik_additional_response_headers.keys() | length > 0 %}
 {% for name, value in readeck_container_labels_traefik_additional_response_headers.items() %}
-traefik.http.middlewares.{{ readeck_identifier }}-add-response-headers.headers.customresponseheaders.{{ name }}={{ value }}
+traefik.http.middlewares.{{ readeck_identifier }}-add-headers.headers.customresponseheaders.{{ name }}={{ value }}
 {% endfor %}
-{% set middlewares = middlewares + [readeck_identifier + '-add-response-headers'] %}
+{% set middlewares = middlewares + [readeck_identifier + '-add-headers'] %}
 {% endif %}
 
 traefik.http.routers.{{ readeck_identifier }}.rule={{ readeck_container_labels_traefik_rule }}
@@ -41,7 +42,7 @@ traefik.http.routers.{{ readeck_identifier }}.tls={{ readeck_container_labels_tr
 traefik.http.routers.{{ readeck_identifier }}.tls.certResolver={{ readeck_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-traefik.http.services.{{ readeck_identifier }}.loadbalancer.server.port=8000
+traefik.http.services.{{ readeck_identifier }}.loadbalancer.server.port=8080
 {% endif %}
 
 {{ readeck_container_labels_additional_labels }}
