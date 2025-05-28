@@ -7,7 +7,7 @@ readeck_identifier: readeck
 readeck_base_path: "/{{ readeck_identifier }}"
 
 
-readeck_version: 0.18.2
+readeck_version: 0.19.1
 
 readeck_uid: ''
 readeck_gid: ''
