@@ -16,12 +16,12 @@ readeck_version: 0.19.2
 readeck_uid: ''
 readeck_gid: ''
 
-# The hostname at which readeck is served.
+# The hostname at which Readeck is served.
 readeck_hostname: ''
 
 readeck_scheme: https
 
-# The path at which readeck is served.
+# The path at which Readeck is served.
 # This value must either be `/` or not end with a slash (e.g. `/readeck`).
 readeck_path_prefix: /
 

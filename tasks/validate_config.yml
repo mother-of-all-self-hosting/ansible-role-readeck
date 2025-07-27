@@ -35,7 +35,7 @@
 - name: Validate Readeck Analytics Traefik configuration
   when: readeck_container_labels_traefik_enabled | bool
   block:
-    - name: Fail if required readeck Analytics Traefik settings not defined
+    - name: Fail if required Readeck Analytics Traefik settings not defined
       ansible.builtin.fail:
         msg: >-
           You need to define a required configuration setting (`{{ item }}`).
@@ -58,5 +58,5 @@
         msg: >-
           `readeck_path_prefix` must be set to `/`.
           See the comments for the `readeck_path_prefix` variable in `defaults/main.yml`.
-          Hosting readeck at a subdirectory may or may not work as expected - it will most likely require additional work.
+          Hosting Readeck at a subdirectory may or may not work as expected - it will most likely require additional work.
       when: "readeck_path_prefix != '/'"
