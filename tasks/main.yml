@@ -4,22 +4,24 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
-- block:
-    - when: readeck_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-
-    - when: readeck_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+- name: Perform Readeck installation tasks
+  when: readeck_enabled | bool
   tags:
     - setup-all
     - setup-readeck
     - install-all
     - install-readeck
+  block:
+    - name: Validate Readeck configuration
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+    - name: Install Readeck
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
-- block:
-    - when: not readeck_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+- name: Perform Readeck uninstallation tasks
+  when: not readeck_enabled | bool
   tags:
     - setup-all
     - setup-readeck
+  block:
+    - name: Uninstall Readeck
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
