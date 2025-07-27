@@ -25,7 +25,7 @@ traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectreg
 {% endif %}
 
 {#
-	Intentionally not adding a stripPrefix middleware.
+  Intentionally not adding a stripPrefix middleware.
 #}
 
 {% if readeck_container_labels_traefik_additional_response_headers.keys() | length > 0 %}

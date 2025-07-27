@@ -24,15 +24,15 @@ ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_s
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ readeck_identifier }} 2>/dev/null || true'
 
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
-			--rm \
-			--name={{ readeck_identifier }} \
-			--log-driver=none \
-			--user={{ readeck_uid }}:{{ readeck_gid }} \
-			--cap-drop=ALL \
-			--network={{ readeck_container_network }} \
-			--label-file={{ readeck_base_path }}/labels \
-			--mount type=bind,src={{ readeck_data_path }},dst=/readeck \
-			{{ readeck_container_image }}
+      --rm \
+      --name={{ readeck_identifier }} \
+      --log-driver=none \
+      --user={{ readeck_uid }}:{{ readeck_gid }} \
+      --cap-drop=ALL \
+      --network={{ readeck_container_network }} \
+      --label-file={{ readeck_base_path }}/labels \
+      --mount type=bind,src={{ readeck_data_path }},dst=/readeck \
+      {{ readeck_container_image }}
 
 {% for network in readeck_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ readeck_identifier }}
