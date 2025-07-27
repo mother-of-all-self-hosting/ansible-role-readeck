@@ -34,6 +34,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% if readeck_container_http_host_bind_port %}
       -p {{ readeck_container_http_host_bind_port }}:{{ readeck_container_http_port }} \
       {% endif %}
+      --env-file={{ readeck_base_path }}/env \
       --label-file={{ readeck_base_path }}/labels \
       --mount type=bind,src={{ readeck_data_path }},dst=/readeck \
       {{ readeck_container_image }}
