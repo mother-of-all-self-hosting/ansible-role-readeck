@@ -10,7 +10,8 @@
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ readeck_identifier }}.service"
   register: readeck_service_stat
 
-- when: readeck_service_stat.stat.exists | bool
+- name: Uninstall Readeck systemd services and files
+  when: readeck_service_stat.stat.exists | bool
   block:
     - name: Ensure Readeck systemd service is stopped
       ansible.builtin.service:
