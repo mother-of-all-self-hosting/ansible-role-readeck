@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: (Deprecation) Catch and report renamed settings
   ansible.builtin.fail:
     msg: >-
@@ -12,12 +11,12 @@
       Please change your configuration to rename the variable (`{{ item.old }}` -> `{{ item.new }}`).
   when: "lookup('ansible.builtin.varnames', ('^' + item.old + '$'), wantlist=True) | length > 0"
   with_items:
-    - {'old': 'readeck_systemd_required_systemd_services_list_default', 'new': 'readeck_systemd_required_services_list_default'}
-    - {'old': 'readeck_systemd_required_systemd_services_list_auto', 'new': 'readeck_systemd_required_services_list_auto'}
-    - {'old': 'readeck_systemd_required_systemd_services_list_custom', 'new': 'readeck_systemd_required_services_list_custom'}
-    - {'old': 'readeck_systemd_wanted_systemd_services_list_default', 'new': 'readeck_systemd_wanted_services_list_default'}
-    - {'old': 'readeck_systemd_wanted_systemd_services_list_auto', 'new': 'readeck_systemd_wanted_services_list_auto'}
-    - {'old': 'readeck_systemd_wanted_systemd_services_list_custom', 'new': 'readeck_systemd_wanted_services_list_custom'}
+    - { "old": "readeck_systemd_required_systemd_services_list_default", "new": "readeck_systemd_required_services_list_default" }
+    - { "old": "readeck_systemd_required_systemd_services_list_auto", "new": "readeck_systemd_required_services_list_auto" }
+    - { "old": "readeck_systemd_required_systemd_services_list_custom", "new": "readeck_systemd_required_services_list_custom" }
+    - { "old": "readeck_systemd_wanted_systemd_services_list_default", "new": "readeck_systemd_wanted_services_list_default" }
+    - { "old": "readeck_systemd_wanted_systemd_services_list_auto", "new": "readeck_systemd_wanted_services_list_auto" }
+    - { "old": "readeck_systemd_wanted_systemd_services_list_custom", "new": "readeck_systemd_wanted_services_list_custom" }
 
 - name: Fail if required Readeck settings not defined
   ansible.builtin.fail:
