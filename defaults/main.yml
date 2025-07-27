@@ -10,6 +10,7 @@ readeck_enabled: true
 
 readeck_identifier: readeck
 readeck_base_path: "/{{ readeck_identifier }}"
+readeck_data_path: "{{ readeck_base_path }}/data"
 
 readeck_version: 0.19.2
 
@@ -146,7 +147,5 @@ readeck_systemd_wanted_services_list: "{{ readeck_systemd_wanted_services_list_d
 readeck_systemd_wanted_services_list_default: []
 readeck_systemd_wanted_services_list_auto: []
 readeck_systemd_wanted_services_list_custom: []
-
-readeck_data_path: "{{ readeck_base_path }}/data"
 
 readeck_environment_variables_additional_variables: ''
