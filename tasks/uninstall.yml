@@ -20,7 +20,7 @@
         enabled: false
         daemon_reload: true
 
-    - name: Ensure Readeck systemd service does not exists
+    - name: Ensure Readeck systemd service does not exist
       ansible.builtin.file:
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ readeck_identifier }}.service"
         state: absent
@@ -40,7 +40,7 @@
       register: network_deletion_result
       changed_when: readeck_container_network in network_deletion_result.stdout
 
-    - name: Ensure Readeck path doesn't exist
+    - name: Ensure Readeck path does not exist
       ansible.builtin.file:
         path: "{{ readeck_base_path }}"
         state: absent
