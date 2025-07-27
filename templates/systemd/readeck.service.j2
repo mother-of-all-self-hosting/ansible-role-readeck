@@ -1,6 +1,7 @@
 {#
 SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 SPDX-FileCopyrightText: 2024 noah
+SPDX-FileCopyrightText: 2025 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 #}
@@ -30,6 +31,9 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --user={{ readeck_uid }}:{{ readeck_gid }} \
       --cap-drop=ALL \
       --network={{ readeck_container_network }} \
+      {% if readeck_container_http_host_bind_port %}
+      -p {{ readeck_container_http_host_bind_port }}:{{ readeck_container_http_port }} \
+      {% endif %}
       --label-file={{ readeck_base_path }}/labels \
       --mount type=bind,src={{ readeck_data_path }},dst=/readeck \
       {{ readeck_container_image }}
