@@ -2,7 +2,7 @@ galaxy_info:
   author: lingawakad
   company: lingawakad
   role_name: readeck
-  namespace: lingawakad
+  namespace: mash
   description: Readeck Ansible Role
   platforms:
     - name: Debian
