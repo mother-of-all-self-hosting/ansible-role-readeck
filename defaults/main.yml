@@ -72,6 +72,12 @@ readeck_container_labels_traefik_tls_certResolver: default  # noqa var-naming
 readeck_container_labels_traefik_compression_middleware_enabled: false
 readeck_container_labels_traefik_compression_middleware_name: ""
 
+# Controls which additional headers to attach to all HTTP requests.
+# To add your own custom request headers, use `readeck_container_labels_traefik_additional_request_headers_custom`
+readeck_container_labels_traefik_additional_request_headers: "{{ readeck_container_labels_traefik_additional_request_headers_auto | combine(readeck_container_labels_traefik_additional_request_headers_custom) }}"
+readeck_container_labels_traefik_additional_request_headers_auto: {}
+readeck_container_labels_traefik_additional_request_headers_custom: {}
+
 # Controls which additional headers to attach to all HTTP responses.
 # To add your own custom response headers, use `readeck_container_labels_traefik_additional_response_headers_custom`
 readeck_container_labels_traefik_additional_response_headers: "{{ readeck_container_labels_traefik_additional_response_headers_auto | combine(readeck_container_labels_traefik_additional_response_headers_custom) }}"

@@ -28,11 +28,18 @@ traefik.http.middlewares.{{ readeck_identifier }}-slashless-redirect.redirectreg
   Intentionally not adding a stripPrefix middleware.
 #}
 
+{% if readeck_container_labels_traefik_additional_request_headers.keys() | length > 0 %}
+{% for name, value in readeck_container_labels_traefik_additional_request_headers.items() %}
+traefik.http.middlewares.{{ readeck_identifier }}-add-request-headers.headers.customrequestheaders.{{ name }}={{ value }}
+{% endfor %}
+{% set middlewares = middlewares + [readeck_identifier + '-add-request-headers'] %}
+{% endif %}
+
 {% if readeck_container_labels_traefik_additional_response_headers.keys() | length > 0 %}
 {% for name, value in readeck_container_labels_traefik_additional_response_headers.items() %}
-traefik.http.middlewares.{{ readeck_identifier }}-add-headers.headers.customresponseheaders.{{ name }}={{ value }}
+traefik.http.middlewares.{{ readeck_identifier }}-add-response-headers.headers.customresponseheaders.{{ name }}={{ value }}
 {% endfor %}
-{% set middlewares = middlewares + [readeck_identifier + '-add-headers'] %}
+{% set middlewares = middlewares + [readeck_identifier + '-add-response-headers'] %}
 {% endif %}
 
 traefik.http.routers.{{ readeck_identifier }}.rule={{ readeck_container_labels_traefik_rule }}
