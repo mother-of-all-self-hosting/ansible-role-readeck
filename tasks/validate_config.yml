@@ -43,6 +43,13 @@
         - readeck_container_labels_traefik_hostname
         - readeck_container_labels_traefik_path_prefix
 
+    - name: Fail if readeck_container_labels_traefik_path_prefix is different than /
+      ansible.builtin.fail:
+        msg: >-
+          readeck_container_labels_traefik_path_prefix (`{{ readeck_container_labels_traefik_path_prefix }}`) must be `/`.
+          Readeck does not support hosting under a subpath yet.
+      when: "readeck_container_labels_traefik_path_prefix != '/'"
+
     # We ensure it doesn't end with a slash, because we handle both (slash and no-slash).
     # Knowing that `readeck_container_labels_traefik_path_prefix` does not end with a slash
     # ensures we know how to set these routes up without having to do "does it end with a slash" checks elsewhere.
@@ -51,11 +58,3 @@
         msg: >-
           readeck_container_labels_traefik_path_prefix (`{{ readeck_container_labels_traefik_path_prefix }}`) must either be `/` or not end with a slash (e.g. `/readeck`).
       when: "readeck_container_labels_traefik_path_prefix != '/' and readeck_container_labels_traefik_path_prefix[-1] == '/'"
-
-    - name: Fail if readeck_path_prefix is anything other than /
-      ansible.builtin.fail:
-        msg: >-
-          `readeck_path_prefix` must be set to `/`.
-          See the comments for the `readeck_path_prefix` variable in `defaults/main.yml`.
-          Hosting Readeck at a subdirectory may or may not work as expected - it will most likely require additional work.
-      when: "readeck_path_prefix != '/'"
