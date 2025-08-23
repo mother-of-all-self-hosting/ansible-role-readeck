@@ -11,18 +11,20 @@ SPDX-FileCopyrightText: 2022 Warren Bailey
 SPDX-FileCopyrightText: 2023 Antonis Christofides
 SPDX-FileCopyrightText: 2023 Felix Stupp
 SPDX-FileCopyrightText: 2023 Pierre 'McFly' Marty
+SPDX-FileCopyrightText: 2024 - 2025 MASH project contributors
 SPDX-FileCopyrightText: 2024 - 2025 Suguru Hirahara
+SPDX-FileCopyrightText: 2024 noah
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 # Setting up Readeck
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Readeck](https://github.com/httpjamesm/Readeck) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Readeck](https://readeck.org) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
-Readeck allows you to view StackOverflow threads without exposing your IP address, browsing habits, and other browser fingerprinting data to the website.
+Readeck is a simple web application that lets you save the precious readable content of web pages you like and want to keep forever.
 
-See the project's [documentation](https://github.com/httpjamesm/Readeck/blob/main/README.md) to learn what Readeck does and why it might be useful to you.
+See the project's [documentation](https://readeck.org/en/docs/) to learn what Readeck does and why it might be useful to you.
 
 ## Adjusting the playbook configuration
 
@@ -66,8 +68,6 @@ Take a look at:
 
 - [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `readeck_environment_variables_additional_variables` variable
 
-See its [`docker-compose.example.yml`](https://github.com/httpjamesm/Readeck/blob/main/docker-compose.example.yml) for a complete list of Readeck's config options that you could put in `readeck_environment_variables_additional_variables`.
-
 ## Installing
 
 After configuring the playbook, run the installation command of your playbook as below:
@@ -80,11 +80,9 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 ## Usage
 
-After running the command for installation, Readeck becomes available at the specified hostname like `https://example.com`.
+After running the command for installation, the Readeck instance becomes available at the URL specified with `readeck_hostname`. With the configuration above, the service is hosted at `https://example.com`.
 
-[Libredirect](https://libredirect.github.io/), an extension for Firefox and Chromium-based desktop browsers, has support for redirections to Readeck. See [this section](https://github.com/httpjamesm/Readeck/blob/main/README.md#how-to-make-stack-overflow-links-take-you-to-readeck-automatically) on the official documentation for more information.
-
-If you would like to make your instance public so that it can be used by anyone including Libredirect, please consider to send a PR to the [upstream project](https://github.com/httpjamesm/Readeck) to add yours to [`instances.json`](https://github.com/httpjamesm/Readeck/blob/main/instances.json), which Libredirect automatically fetches using a script (see [this FAQ entry](https://libredirect.github.io/faq.html#where_the_hell_are_those_instances_coming_from)).
+To get started, open the URL with a web browser, and create a user.
 
 ## Troubleshooting
 
