@@ -13,7 +13,7 @@ readeck_base_path: "/{{ readeck_identifier }}"
 readeck_data_path: "{{ readeck_base_path }}/data"
 
 # renovate: datasource=docker depName=codeberg.org/readeck/readeck versioning=semver
-readeck_version: 0.20.0
+readeck_version: 0.20.1
 
 readeck_uid: ''
 readeck_gid: ''
