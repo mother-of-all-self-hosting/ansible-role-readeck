@@ -38,12 +38,14 @@
         cmd: "rmdir {{ readeck_data_path }}"
       register: readeck_data_path_deletion_result
       changed_when: readeck_data_path_deletion_result.rc == 0
+      failed_when: false
 
     - name: Ensure Readeck base path does not exist if empty
       ansible.builtin.command:
         cmd: "rmdir {{ readeck_base_path }}"
       register: readeck_base_path_deletion_result
       changed_when: readeck_base_path_deletion_result.rc == 0
+      failed_when: false
 
     - name: Ensure Readeck container network does not exist via community.docker.docker_network
       when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
