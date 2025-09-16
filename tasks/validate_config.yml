@@ -17,6 +17,7 @@
     - { "old": "readeck_systemd_wanted_systemd_services_list_default", "new": "readeck_systemd_wanted_services_list_default" }
     - { "old": "readeck_systemd_wanted_systemd_services_list_auto", "new": "readeck_systemd_wanted_services_list_auto" }
     - { "old": "readeck_systemd_wanted_systemd_services_list_custom", "new": "readeck_systemd_wanted_services_list_custom" }
+    - { "old": "readeck_http_header_content_permission_policy", "new": "readeck_http_header_permissions_policy" }
 
 - name: Fail if required Readeck settings not defined
   ansible.builtin.fail:
