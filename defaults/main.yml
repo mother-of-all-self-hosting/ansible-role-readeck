@@ -15,11 +15,11 @@ readeck_data_path: "{{ readeck_base_path }}/data"
 # renovate: datasource=docker depName=codeberg.org/readeck/readeck versioning=semver
 readeck_version: 0.20.4
 
-readeck_uid: ''
-readeck_gid: ''
+readeck_uid: ""
+readeck_gid: ""
 
 # The hostname at which Readeck is served.
-readeck_hostname: ''
+readeck_hostname: ""
 
 readeck_scheme: https
 
@@ -99,7 +99,7 @@ readeck_container_labels_traefik_additional_response_headers_custom: {'X-Clacks-
 # readeck_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-readeck_container_labels_additional_labels: ''
+readeck_container_labels_additional_labels: ""
 
 # A list of extra arguments to pass to the container
 readeck_container_extra_arguments: []
@@ -164,4 +164,4 @@ readeck_systemd_wanted_services_list_auto: []
 readeck_systemd_wanted_services_list_custom: []
 
 # Additional environment variables.
-readeck_environment_variables_additional_variables: ''
+readeck_environment_variables_additional_variables: ""
