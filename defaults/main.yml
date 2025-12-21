@@ -104,7 +104,7 @@ readeck_container_labels_additional_labels: "{{ readeck_container_labels_additio
 readeck_container_labels_additional_labels_auto: {}
 readeck_container_labels_additional_labels_custom: {}
 
-# A list of extra arguments to pass to the container
+# A list of extra arguments to pass to the container (`docker create` command)
 readeck_container_extra_arguments: "{{ readeck_container_extra_arguments_auto + readeck_container_extra_arguments_custom }}"
 readeck_container_extra_arguments_auto: []
 readeck_container_extra_arguments_custom: []
