@@ -157,7 +157,7 @@ readeck_floc_optout_enabled: true
 # See: `readeck_http_header_strict_transport_security`
 readeck_hsts_preload_enabled: false
 
-# List of systemd services that Readeck systemd service depends on
+# List of systemd services that the Readeck systemd service depends on
 readeck_systemd_required_services_list: "{{ readeck_systemd_required_services_list_default + readeck_systemd_required_services_list_auto + readeck_systemd_required_services_list_custom }}"
 readeck_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
 readeck_systemd_required_services_list_auto: []
