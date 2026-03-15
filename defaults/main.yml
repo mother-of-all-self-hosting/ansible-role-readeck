@@ -219,6 +219,16 @@ readeck_database_username: readeck
 readeck_database_password: ""
 readeck_database_name: readeck
 
+# Specify SMTP server configuration
+readeck_environment_variables_readeck_mail_host: ""
+readeck_environment_variables_readeck_mail_port: 587
+readeck_environment_variables_readeck_mail_username: ""
+readeck_environment_variables_readeck_mail_password: ""
+readeck_environment_variables_readeck_mail_insecure: false
+readeck_environment_variables_readeck_mail_encryption: "" # Valid values: starttls, ssltls
+readeck_environment_variables_readeck_mail_from: ""
+readeck_environment_variables_readeck_mail_fromnoreply: ""
+
 # Specify the timezone
 readeck_environment_variables_tz: UTC
 

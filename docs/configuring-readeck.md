@@ -82,6 +82,43 @@ Set `sqlite` to use SQLite. The SQLite database is stored in the directory speci
 
 For other settings, check variables such as `readeck_database_*` on [`defaults/main.yml`](../defaults/main.yml).
 
+### Configuring a SMTP mailer (optional)
+
+You can configure a SMTP mailer to enable email functions such as bookmark sharing and password recovery.
+
+To configure it, add the following configuration to your `vars.yml` file as below (adapt to your needs):
+
+```yaml
+# Specify SMTP server hostname
+readeck_environment_variables_readeck_mail_host: ""
+
+# Specify SMTP server port
+readeck_environment_variables_readeck_mail_port: 587
+
+# Specify SMTP server username
+readeck_environment_variables_readeck_mail_username: ""
+
+# Specify SMTP server password
+readeck_environment_variables_readeck_mail_password: ""
+
+# Control if the server certificate is verified
+readeck_environment_variables_readeck_mail_insecure: false
+
+# Specify SMTP server encryption
+# Valid values: starttls, ssltls
+readeck_environment_variables_readeck_mail_encryption: ""
+
+# Specify the email address that emails will be sent from
+readeck_environment_variables_readeck_mail_from: ""
+
+# Specify the email address that emails will be sent from
+# For messages that do not need a reply
+readeck_environment_variables_readeck_mail_fromnoreply: ""
+```
+
+>[!WARNING]
+> Without setting an authentication method such as DKIM, SPF, and DMARC for your hostname, emails are most likely to be quarantined as spam at recipient's mail servers. The worst scenario is that your server's IP address or hostname will be included in the spam list such as the one managed by [Spamhaus](https://www.spamhaus.org/). If you have set up a mail server with the [MASH project's exim-relay Ansible role](https://github.com/mother-of-all-self-hosting/ansible-role-exim-relay), you can enable DKIM signing with it. Refer [its documentation](https://github.com/mother-of-all-self-hosting/ansible-role-exim-relay/blob/main/docs/configuring-exim-relay.md#enable-dkim-support-optional) for details.
+
 ### Extending the configuration
 
 There are some additional things you may wish to configure about the service.
