@@ -148,3 +148,11 @@ To get started, open the URL with a web browser, and create a user.
 ### Check the service's logs
 
 You can find the logs in [systemd-journald](https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html) by logging in to the server with SSH and running `journalctl -fu readeck` (or how you/your playbook named the service, e.g. `mash-readeck`).
+
+#### Increase logging verbosity
+
+If you want to increase the verbosity, add the following configuration to your `vars.yml` file:
+
+```yaml
+readeck_environment_variables_readeck_log_level: debug
+```

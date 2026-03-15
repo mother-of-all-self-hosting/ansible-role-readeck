@@ -232,6 +232,14 @@ readeck_environment_variables_readeck_mail_fromnoreply: ""
 # Specify the timezone
 readeck_environment_variables_tz: UTC
 
+# Specify a logging level
+# Valid values: debug, error, info, warn
+readeck_environment_variables_readeck_log_level: info
+
+# Specify log format
+# Valid values: dev, json, text
+readeck_environment_variables_readeck_log_format: text
+
 # Additional environment variables.
 readeck_environment_variables_additional_variables: ""
 

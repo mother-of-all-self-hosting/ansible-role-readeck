@@ -36,6 +36,18 @@
     - readeck_container_network
     - readeck_database_type
 
+- name: Fail if Readeck logging level is invalid
+  ansible.builtin.fail:
+    msg: >-
+      readeck_environment_variables_readeck_log_level must be 'debug', 'error', 'info', or 'warn'
+  when: "readeck_environment_variables_readeck_log_level not in ['debug', 'error', 'info', 'warn']"
+
+- name: Fail if Readeck log format is invalid
+  ansible.builtin.fail:
+    msg: >-
+      readeck_environment_variables_readeck_log_format must be 'dev', 'json', or 'text'
+  when: "readeck_environment_variables_readeck_log_format not in ['dev', 'json', 'text']"
+
 - name: Fail if Readeck database type is invalid
   ansible.builtin.fail:
     msg: >-
