@@ -1,19 +1,21 @@
 <!--
-SPDX-FileCopyrightText: 2020 - 2024 MDAD project contributors
-SPDX-FileCopyrightText: 2020 - 2024 Slavi Pantaleev
 SPDX-FileCopyrightText: 2020 Aaron Raimist
 SPDX-FileCopyrightText: 2020 Chris van Dijk
 SPDX-FileCopyrightText: 2020 Dominik Zajac
 SPDX-FileCopyrightText: 2020 Mickaël Cornière
+SPDX-FileCopyrightText: 2020-2024 MDAD project contributors
+SPDX-FileCopyrightText: 2020-2024 Slavi Pantaleev
 SPDX-FileCopyrightText: 2022 François Darveau
 SPDX-FileCopyrightText: 2022 Julian Foad
 SPDX-FileCopyrightText: 2022 Warren Bailey
 SPDX-FileCopyrightText: 2023 Antonis Christofides
 SPDX-FileCopyrightText: 2023 Felix Stupp
+SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
 SPDX-FileCopyrightText: 2023 Pierre 'McFly' Marty
-SPDX-FileCopyrightText: 2024 - 2025 MASH project contributors
-SPDX-FileCopyrightText: 2024 - 2025 Suguru Hirahara
+SPDX-FileCopyrightText: 2024 Thomas Miceli
 SPDX-FileCopyrightText: 2024 noah
+SPDX-FileCopyrightText: 2024, 2025 MASH project contributors
+SPDX-FileCopyrightText: 2024-2026 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
@@ -25,6 +27,12 @@ This is an [Ansible](https://www.ansible.com/) role which installs [Readeck](htt
 Readeck is a simple web application that lets you save the precious readable content of web pages you like and want to keep forever.
 
 See the project's [documentation](https://readeck.org/en/docs/) to learn what Readeck does and why it might be useful to you.
+
+## Prerequisites
+
+To run an Readeck it is necessary to prepare a database. You can use [Postgres](https://www.postgresql.org/) or [SQLite](https://www.sqlite.org/). The SQLite database file will be automatically created by the service if it is enabled.
+
+If you are looking for an Ansible role for Postgres, you can check out [this role (ansible-role-postgres)](https://github.com/mother-of-all-self-hosting/ansible-role-postgres) maintained by the [Mother-of-All-Self-Hosting (MASH)](https://github.com/mother-of-all-self-hosting) team.
 
 ## Adjusting the playbook configuration
 
@@ -59,6 +67,20 @@ readeck_hostname: "example.com"
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
 **Note**: hosting Readeck under a subpath (by configuring the `readeck_path_prefix` variable) does not seem to be possible due to Readeck's technical limitations.
+
+### Specify database
+
+It is necessary to select database used by Readeck from Postgres and SQLite.
+
+To use Postgres, add the following configuration to your `vars.yml` file:
+
+```yaml
+readeck_database_type: postgres
+```
+
+Set `sqlite` to use SQLite. The SQLite database is stored in the directory specified with `readeck_data_path`.
+
+For other settings, check variables such as `readeck_database_*` on [`defaults/main.yml`](../defaults/main.yml).
 
 ### Extending the configuration
 

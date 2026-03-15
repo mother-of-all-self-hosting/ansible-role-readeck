@@ -1,5 +1,8 @@
-# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2023 MASH project contributors
+# SPDX-FileCopyrightText: 2023-2025 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 noah
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -31,6 +34,22 @@
     - readeck_hostname
     - readeck_path_prefix
     - readeck_container_network
+    - readeck_database_type
+
+- name: Fail if Readeck database type is invalid
+  ansible.builtin.fail:
+    msg: >-
+      readeck_database_type must be 'postgres' or 'sqlite'.
+  when: "readeck_database_type not in ['postgres', 'sqlite']"
+
+- name: Fail if required Readeck + Postgres integration settings not defined
+  ansible.builtin.fail:
+    msg: >-
+      You need to define a required configuration setting (`{{ item }}`) when `readeck_database_type` is `postgres`
+  when: "readeck_database_type == 'postgres' and lookup('vars', item, default='') | string | length == 0"
+  with_items:
+    - readeck_database_hostname
+    - readeck_database_password
 
 - name: Validate Readeck Traefik configuration
   when: readeck_container_labels_traefik_enabled | bool

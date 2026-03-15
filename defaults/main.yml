@@ -1,5 +1,10 @@
-# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2023, 2024 Nikita Chernyi
+# SPDX-FileCopyrightText: 2023-2025 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2024 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2024 Sergio Durigan Junior
 # SPDX-FileCopyrightText: 2024 noah
+# SPDX-FileCopyrightText: 2025 MASH project contributors
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -202,6 +207,17 @@ readeck_container_cleanup_command: |
   done;
   echo "Failed to remove stale container {{ readeck_identifier }} after {{ readeck_container_cleanup_timeout_seconds }} attempts" >&2;
   exit 1
+
+# Specify a database driver to use
+# Valid values: postgres, sqlite
+readeck_database_type: ""
+
+# Specify database configuration
+readeck_database_hostname: ""
+readeck_database_port: 5432
+readeck_database_username: readeck
+readeck_database_password: ""
+readeck_database_name: readeck
 
 # Specify the timezone
 readeck_environment_variables_tz: UTC
