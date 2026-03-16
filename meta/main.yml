@@ -4,7 +4,7 @@ galaxy_info:
   company: lingawakad
   role_name: readeck
   namespace: mash
-  description: Readeck Ansible Role
+  description: Readeck
   platforms:
     - name: Debian
       versions:
