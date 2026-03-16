@@ -28,6 +28,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --log-driver=none \
       --user={{ readeck_uid }}:{{ readeck_gid }} \
       --cap-drop=ALL \
+      --read-only \
       --network={{ readeck_container_network }} \
       {% if readeck_container_http_host_bind_port %}
       -p {{ readeck_container_http_host_bind_port }}:{{ readeck_container_http_port }} \
