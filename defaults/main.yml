@@ -217,6 +217,10 @@ readeck_database_hostname: ""
 readeck_database_port: 5432
 readeck_database_username: readeck
 readeck_database_password: ""
+# Specify SSL mode for Postgres database server
+# By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
+# Valid values: see https://www.postgresql.org/docs/11/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
+readeck_database_sslmode: disable
 readeck_database_name: readeck
 
 # Specify SMTP server configuration
