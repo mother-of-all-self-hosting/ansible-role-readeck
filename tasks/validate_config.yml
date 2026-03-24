@@ -57,10 +57,11 @@
   ansible.builtin.fail:
     msg: >-
       You need to define a required configuration setting (`{{ item }}`) when `readeck_database_type` is `postgres`
-  when: "readeck_database_type == 'postgres' and lookup('vars', item, default='') | string | length == 0"
+  when: "readeck_database_type == 'postgres' and item.when | bool and lookup('vars', item.name, default='') | string | length == 0"
   with_items:
-    - readeck_database_hostname
-    - readeck_database_password
+    - { "name": "readeck_database_socket_path_host", when: "{{ readeck_database_socket_enabled }}" }
+    - { "name": "readeck_database_hostname", when: "{{ not readeck_database_socket_enabled }}" }
+    - { "name": "readeck_database_password", when: true }
 
 - name: Run if Traefik is enabled
   when: readeck_container_labels_traefik_enabled | bool

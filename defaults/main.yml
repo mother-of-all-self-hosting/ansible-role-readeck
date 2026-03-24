@@ -217,6 +217,12 @@ readeck_container_cleanup_command: |
   echo "Failed to remove stale container {{ readeck_identifier }} after {{ readeck_container_cleanup_timeout_seconds }} attempts" >&2;
   exit 1
 
+########################################################################
+#                                                                      #
+# database                                                             #
+#                                                                      #
+########################################################################
+
 # Specify a database driver to use
 # Valid values: postgres, sqlite
 readeck_database_type: ""
@@ -231,6 +237,21 @@ readeck_database_password: ""
 # Valid values: see https://www.postgresql.org/docs/11/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
 readeck_database_sslmode: disable
 readeck_database_name: readeck
+
+# Control if the database connection to Postgres is made via a Unix socket
+readeck_database_socket_enabled: true
+
+# Specify the path to the Postgres Unix socket path inside the Readeck container
+readeck_database_socket_path_container: /run-postgres
+
+# Specify the path to the Postgres Unix socket path on the host (bind-mount source)
+readeck_database_socket_path_host: ""
+
+########################################################################
+#                                                                      #
+# /database                                                            #
+#                                                                      #
+########################################################################
 
 # Specify SMTP server configuration
 readeck_environment_variables_readeck_mail_host: ""

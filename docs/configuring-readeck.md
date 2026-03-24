@@ -82,6 +82,24 @@ Set `sqlite` to use SQLite. The SQLite database is stored in the directory speci
 
 For other settings, check variables such as `readeck_database_*` on [`defaults/main.yml`](../defaults/main.yml).
 
+### Configuring connection to Postgres server (optional)
+
+By default the role is configured to establish connection with the Postgres server via the Unix socket. You can mount the Unix socket by adding the following configuration to your `vars.yml` file:
+
+```yaml
+# Specify the path to the Postgres Unix socket path on the host (bind-mount source)
+readeck_database_socket_path_host: ""
+```
+
+Setting it enables to connect to the Postgres server via Unix socket mounted in the container at `/run-postgres/.s.PGSQL.5432`.
+
+If TCP connection is preferred, connection via the Unix socket can be disabled by adding the following configuration to your `vars.yml` file:
+
+```yaml
+# Disable the connection to Postgres server via a Unix socket
+readeck_database_socket_enabled: false
+```
+
 ### Configuring a SMTP mailer (optional)
 
 You can configure a SMTP mailer to enable email functions such as bookmark sharing and password recovery.
