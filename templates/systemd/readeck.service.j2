@@ -36,6 +36,9 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --env-file={{ readeck_base_path }}/env \
       --label-file={{ readeck_base_path }}/labels \
       --mount type=bind,src={{ readeck_data_path }},dst=/readeck \
+      {% for arg in readeck_container_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
       {{ readeck_container_image }}
 
 {% for network in readeck_container_additional_networks %}
