@@ -36,7 +36,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --env-file={{ readeck_base_path }}/env \
       --label-file={{ readeck_base_path }}/labels \
       --mount type=bind,src={{ readeck_data_path }},dst=/readeck \
-      {% if readeck_database_socket_enabled %}
+      {% if readeck_database_socket_enabled and readeck_database_socket_path_host != '' %}
       --mount type=bind,src={{ readeck_database_socket_path_host }},dst={{ readeck_database_socket_path_container }} \
       {% endif %}
       {% for volume in readeck_container_additional_volumes %}
