@@ -98,6 +98,9 @@ If TCP connection is preferred, connection via the Unix socket can be disabled b
 ```yaml
 # Disable the connection to Postgres server via a Unix socket
 readeck_database_socket_enabled: false
+
+readeck_database_hostname: YOUR_POSTGRES_SERVER_HOSTNAME_HERE
+readeck_database_port: 5432
 ```
 
 ### Configuring a SMTP mailer (optional)
