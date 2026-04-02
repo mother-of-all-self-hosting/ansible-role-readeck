@@ -68,7 +68,9 @@ After adjusting the hostname, make sure to adjust your DNS records to point the 
 
 **Note**: hosting Readeck under a subpath (by configuring the `readeck_path_prefix` variable) does not seem to be possible due to Readeck's technical limitations.
 
-### Specify database
+### Configuring database
+
+#### Specify database
 
 It is necessary to select database used by Readeck from Postgres and SQLite.
 
@@ -82,7 +84,7 @@ Set `sqlite` to use SQLite. The SQLite database is stored in the directory speci
 
 For other settings, check variables such as `readeck_database_*` on [`defaults/main.yml`](../defaults/main.yml).
 
-### Configuring connection to Postgres server (optional)
+#### Configuring connection to the database server (optional)
 
 By default the role is configured to establish connection with the Postgres server via the Unix socket. You can mount the Unix socket by adding the following configuration to your `vars.yml` file:
 
