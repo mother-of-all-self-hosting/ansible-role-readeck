@@ -79,7 +79,7 @@ readeck_container_labels_traefik_docker_network: "{{ readeck_container_network }
 readeck_container_labels_traefik_hostname: "{{ readeck_hostname }}"
 # The path prefix must either be `/` or not end with a slash (e.g. `/readeck`).
 readeck_container_labels_traefik_path_prefix: "{{ readeck_path_prefix }}"
-readeck_container_labels_traefik_rule: "Host(`{{ readeck_container_labels_traefik_hostname }}`){% if readeck_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ readeck_container_labels_traefik_path_prefix }}`){% endif %}"
+readeck_container_labels_traefik_rule: "Host(`{{ readeck_container_labels_traefik_hostname }}`)"
 readeck_container_labels_traefik_priority: 0
 readeck_container_labels_traefik_entrypoints: web-secure
 readeck_container_labels_traefik_tls: "{{ readeck_container_labels_traefik_entrypoints != 'web' }}"
