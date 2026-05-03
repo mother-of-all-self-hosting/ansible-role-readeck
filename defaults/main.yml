@@ -84,6 +84,9 @@ readeck_container_labels_traefik_priority: 0
 readeck_container_labels_traefik_entrypoints: web-secure
 readeck_container_labels_traefik_tls: "{{ readeck_container_labels_traefik_entrypoints != 'web' }}"
 readeck_container_labels_traefik_tls_certResolver: default  # noqa var-naming
+readeck_container_labels_traefik_middleware_basic_auth_enabled: false
+# See: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/
+readeck_container_labels_traefik_middleware_basic_auth_users: ""
 
 # Controls whether a compression middleware will be injected into the middlewares list.
 # This compression middleware is supposed to be defined elsewhere (using labels or a File provider, etc.) and is merely referenced by this router.

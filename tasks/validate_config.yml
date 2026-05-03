@@ -25,15 +25,16 @@
 - name: Fail if required Readeck settings not defined
   ansible.builtin.fail:
     msg: >-
-      You need to define a required configuration setting (`{{ item }}`).
-  when: "lookup('vars', item, default='') | string | length == 0"
+      You need to define a required configuration setting (`{{ item.name }}`).
+  when: "item.when | bool and lookup('vars', item.name, default='') | string | length == 0"
   with_items:
-    - readeck_uid
-    - readeck_gid
-    - readeck_hostname
-    - readeck_path_prefix
-    - readeck_container_network
-    - readeck_database_type
+    - { "name": "readeck_uid", when: true }
+    - { "name": "readeck_gid", when: true }
+    - { "name": "readeck_hostname", when: true }
+    - { "name": "readeck_path_prefix", when: true }
+    - { "name": "readeck_container_network", when: true }
+    - { "name": "readeck_container_labels_traefik_middleware_basic_auth_users", when: "{{ readeck_container_labels_traefik_middleware_basic_auth_enabled }}" }
+    - { "name": "readeck_database_type", when: true }
 
 - name: Fail if Readeck logging level is invalid
   ansible.builtin.fail:
