@@ -38,7 +38,6 @@ readeck_container_image_tag: "{{ readeck_version }}"
 readeck_container_image_registry_prefix: "{{ readeck_container_image_registry_prefix_upstream }}"
 readeck_container_image_registry_prefix_upstream: "{{ readeck_container_image_registry_prefix_upstream_default }}"
 readeck_container_image_registry_prefix_upstream_default: codeberg.org/
-readeck_container_image_force_pull: "{{ readeck_container_image.endswith(':latest') }}"
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 readeck_container_network: "{{ readeck_identifier }}"
