@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Readeck systemd service
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Wait for Readeck service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: readeck.service
+      register: readeck_service
+      until: readeck_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert Readeck service is active
+      ansible.builtin.assert:
+        that: readeck_service.status.ActiveState == 'active'
+        fail_msg: "readeck.service not active ({{ readeck_service.status.ActiveState }})"
+        success_msg: "readeck.service is active"
+
+    - name: Wait for Readeck HTTP endpoint to respond (up to 10m)
+      ansible.builtin.uri:
+        url: "http://localhost:8000/"
+        method: GET
+        status_code: [200, 302, 303]
+        follow_redirects: none
+      register: readeck_endpoint
+      until: readeck_endpoint.status in [200, 302, 303]
+      retries: 120
+      delay: 5
+
+    - name: Assert Readeck HTTP endpoint responds
+      ansible.builtin.assert:
+        that: readeck_endpoint.status in [200, 302, 303]
+        fail_msg: "Readeck did not respond as expected ({{ readeck_endpoint.status | default('no response') }})"
+        success_msg: "Readeck responded with {{ readeck_endpoint.status }}"
+
+    - name: Show Readeck systemd service status summary
+      ansible.builtin.debug:
+        msg:
+          - "Readeck systemd: {{ readeck_service.status.ActiveState }}"
+          - "Readeck HTTP: {{ readeck_endpoint.status }}"
