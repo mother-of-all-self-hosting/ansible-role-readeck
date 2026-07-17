@@ -23,6 +23,12 @@
         fail_msg: "readeck.service not active ({{ readeck_service.status.ActiveState }})"
         success_msg: "readeck.service is active"
 
+    - name: Retrieve Readeck service log for debugging
+      when: readeck_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu readeck.service
+      changed_when: false
+
     - name: Wait for Readeck HTTP endpoint to respond (up to 10m)
       ansible.builtin.uri:
         url: "http://localhost:8000/"
