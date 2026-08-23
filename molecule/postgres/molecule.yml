@@ -38,9 +38,9 @@ provisioner:
         readeck_hostname: localhost
         readeck_container_labels_traefik_enabled: false
         readeck_container_http_host_bind_port: 8000
-        readeck_database_type: postgres
 
         # Variables required for Readeck to connect to the Postgres database (via Unix socket)
+        readeck_database_type: postgres
         readeck_database_username: my_database_username
         readeck_database_password: my_database_password
         readeck_database_sslmode: disable
