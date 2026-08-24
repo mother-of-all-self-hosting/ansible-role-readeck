@@ -446,8 +446,8 @@
       ansible.builtin.debug:
         msg:
           - "Readeck systemd: {{ readeck_service.status.ActiveState }}"
-          - "Version: {{ readeck_api_info.json.version.canonical }}"
-          - "Anonymous root redirect: {{ readeck_root.location }}"
-          - "API session role: {{ readeck_profile.json.provider.roles | join(', ') }}"
-          - "Bookmark: {{ readeck_bookmark_created.bookmark_id }}"
-          - "Extracted words: {{ readeck_bookmark.json.word_count }}"
+          - "Readeck version: {{ readeck_api_info.json.version.canonical }}"
+          - "Readeck anonymous root redirect: {{ readeck_root.location }}"
+          - "Readeck API session role: {{ readeck_profile.json.provider.roles | join(', ') }}"
+          - "Readeck bookmark: {{ readeck_bookmark_created.bookmark_id }}"
+          - "Readeck extracted words: {{ readeck_bookmark.json.word_count }}"
