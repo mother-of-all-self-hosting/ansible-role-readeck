@@ -1,14 +1,48 @@
 # SPDX-FileCopyrightText: 2026 Suguru Hirahara
 # SPDX-FileCopyrightText: 2026 spatterlight
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Verify Readeck systemd service
+- name: Verify Readeck
   hosts: all
   become: true
   gather_facts: false
+
+  vars:
+    readeck_verify_base_url: "http://localhost:8000"
+
+    # Readeck has no unauthenticated write API, so the scenario provisions an
+    # account of its own and logs in with it.
+    readeck_verify_username: molecule
+    readeck_verify_password: molecule-password-1234
+
+    # The page that Readeck is asked to bookmark. It is served by a helper
+    # container attached to the role's own container network, so the probe
+    # exercises a real fetch without ever reaching the public internet.
+    readeck_verify_helper_identifier: readeck-molecule-helper-default
+    readeck_verify_helper_root: /tmp/readeck-molecule-helper-default
+    readeck_verify_helper_host_bind_port: 8099
+
+    # A sentence that only exists in the fixture page. Finding it in the
+    # article that Readeck stored proves the page was fetched, extracted and
+    # persisted, rather than merely accepted. Free of apostrophes and quotes,
+    # which Readeck escapes as HTML entities in the article it serves back.
+    readeck_verify_fixture_sentence: >-
+      Readeck extracted this sentence from a page served inside the container network
+
   tasks:
+    # The role is not included in this playbook, so its defaults are not in
+    # scope. Reading defaults/main.yml directly keeps the assertions below tied
+    # to the values that Renovate bumps, with nothing to keep in sync in this
+    # scenario. Only literal leaf values are used from it - anything built with
+    # Jinja is unrendered here. include_vars reads from the controller.
+    - name: Load the Readeck role defaults
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: readeck_defaults
+
     - name: Wait for Readeck service to become active (up to 180s)
       ansible.builtin.systemd:
         name: readeck.service
@@ -29,25 +63,391 @@
         cmd: journalctl -xeu readeck.service
       changed_when: false
 
-    - name: Wait for Readeck HTTP endpoint to respond (up to 10m)
+    - name: Wait for the Readeck HTTP endpoint to respond (up to 10m)
       ansible.builtin.uri:
-        url: "http://localhost:8000/"
+        url: "{{ readeck_verify_base_url }}/api/info"
         method: GET
-        status_code: [200, 302, 303]
-        follow_redirects: none
-      register: readeck_endpoint
-      until: readeck_endpoint.status in [200, 302, 303]
+        status_code: [200, 404, 502, 503]
+        return_content: true
+      register: readeck_api_info
+      until: readeck_api_info.status == 200
       retries: 120
       delay: 5
 
-    - name: Assert Readeck HTTP endpoint responds
+    - name: Assert the Readeck HTTP endpoint answers
       ansible.builtin.assert:
-        that: readeck_endpoint.status in [200, 302, 303]
-        fail_msg: "Readeck did not respond as expected ({{ readeck_endpoint.status | default('no response') }})"
-        success_msg: "Readeck responded with {{ readeck_endpoint.status }}"
+        that: readeck_api_info.status == 200
+        fail_msg: "Readeck did not answer /api/info ({{ readeck_api_info.status | default('no response') }})"
+        success_msg: "Readeck answers /api/info"
 
-    - name: Show Readeck systemd service status summary
+    # Tying the running version to `readeck_version` is what makes this
+    # scenario a real test of the version that Renovate bumps: a bump that
+    # produces an unusable or mistagged image cannot pass here.
+    - name: Assert the running version is the one the role asks for
+      ansible.builtin.assert:
+        that: readeck_api_info.json.version.canonical == readeck_defaults.readeck_version
+        fail_msg: >-
+          Readeck reports version {{ readeck_api_info.json.version.canonical | default('none') }},
+          but the role asks for {{ readeck_defaults.readeck_version }}
+        success_msg: "Readeck reports version {{ readeck_api_info.json.version.canonical }}"
+
+    # A second, independent reading of the same fact. /api/info is served by
+    # the HTTP layer; this one comes from the binary in the container that the
+    # systemd unit actually started, so the two together rule out the endpoint
+    # being answered by something other than the image the role deployed.
+    - name: Query the version reported by the Readeck binary
+      ansible.builtin.command:
+        cmd: "docker exec {{ readeck_defaults.readeck_identifier }} readeck version"
+      register: readeck_version_command
+      changed_when: false
+
+    - name: Assert the Readeck binary reports the version the role asks for
+      ansible.builtin.assert:
+        that: readeck_defaults.readeck_version in readeck_version_command.stdout
+        fail_msg: >-
+          The Readeck binary reports {{ readeck_version_command.stdout | default('nothing') }},
+          which does not mention the requested version {{ readeck_defaults.readeck_version }}
+        success_msg: "The Readeck binary reports {{ readeck_version_command.stdout | trim }}"
+
+    # `readeck config` dumps the configuration the process is actually running
+    # with, after the environment file the role rendered has been applied. This
+    # is the link between what the role wrote to disk and what the process
+    # believes, which a probe of the HTTP surface alone cannot establish.
+    - name: Read the effective Readeck configuration
+      ansible.builtin.command:
+        cmd: "docker exec {{ readeck_defaults.readeck_identifier }} readeck config"
+      register: readeck_config_command
+      changed_when: false
+      no_log: true  # the dump contains the session secret key
+
+    - name: Assert the environment file rendered by the role reached the process
+      ansible.builtin.assert:
+        that:
+          # An unconfigured Readeck leaves the log format empty, so a value here
+          # can only have come from the READECK_LOG_FORMAT line the role
+          # rendered. Readeck upper-cases the log level it reports.
+          - (readeck_config_command.stdout | from_json).main.log_format == readeck_defaults.readeck_environment_variables_readeck_log_format
+          - (readeck_config_command.stdout | from_json).main.log_level == readeck_defaults.readeck_environment_variables_readeck_log_level | upper
+          - (readeck_config_command.stdout | from_json).server.prefix == readeck_defaults.readeck_path_prefix
+          # This scenario runs on SQLite, so the role must not have configured a
+          # Postgres data source.
+          - (readeck_config_command.stdout | from_json).database.source is match('^sqlite3:')
+        fail_msg: "The running Readeck configuration does not match what the role rendered"
+        success_msg: "The environment file rendered by the role reached the Readeck process"
+
+    # Readeck decides whether it still needs onboarding when it starts, so the
+    # account has to exist before a restart for the application to leave the
+    # onboarding wizard behind.
+    - name: Create the Readeck account used by this scenario
+      ansible.builtin.command:
+        cmd: >-
+          docker exec {{ readeck_defaults.readeck_identifier }}
+          readeck user -u {{ readeck_verify_username }}
+          -p {{ readeck_verify_password }} -group admin -json
+      register: readeck_user_creation
+      changed_when: false
+
+    - name: Assert the account was created
+      ansible.builtin.assert:
+        that: (readeck_user_creation.stdout | from_json).status in ['create', 'update']
+        fail_msg: "Creating the Readeck account did not succeed: {{ readeck_user_creation.stdout | default('no output') }}"
+        success_msg: "The Readeck account '{{ readeck_verify_username }}' exists"
+
+    - name: Restart Readeck so that it picks up the newly created account
+      ansible.builtin.systemd:
+        name: readeck.service
+        state: restarted
+      changed_when: false
+
+    - name: Wait for Readeck to answer again after the restart (up to 5m)
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/api/info"
+        method: GET
+        status_code: [200, 404, 502, 503]
+      register: readeck_api_info_after_restart
+      until: readeck_api_info_after_restart.status == 200
+      retries: 60
+      delay: 5
+
+    # Before an account exists, Readeck sends every visitor to /onboarding. That
+    # it now sends them to /login instead is the observable difference between a
+    # provisioned installation and a bare container, and it is what makes the
+    # probes below meaningful rather than a test of the stock image.
+    - name: Fetch the Readeck root path
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/"
+        method: GET
+        status_code: [200, 302, 303]
+        follow_redirects: none
+      register: readeck_root
+
+    - name: Assert Readeck has left onboarding behind
+      ansible.builtin.assert:
+        that:
+          - readeck_root.status == 303
+          - "'/login' in readeck_root.location"
+          - "'/onboarding' not in readeck_root.location"
+        fail_msg: >-
+          Readeck answered the root path with {{ readeck_root.status }} to
+          {{ readeck_root.location | default('nowhere') }}, which suggests it is still unprovisioned
+        success_msg: "Readeck redirects anonymous visitors to the login page"
+
+    - name: Ensure the helper document root exists
+      ansible.builtin.file:
+        path: "{{ readeck_verify_helper_root }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install the fixture page served by the helper
+      ansible.builtin.copy:
+        dest: "{{ readeck_verify_helper_root }}/index.html"
+        mode: "0644"
+        content: |
+          <!doctype html>
+          <html lang="en">
+          <head><title>Readeck Molecule Fixture</title></head>
+          <body>
+          <article>
+          <h1>Readeck Molecule Fixture</h1>
+          <p>{{ readeck_verify_fixture_sentence }}, which is how this scenario tells a
+          working extraction pipeline apart from one that merely accepted the request.</p>
+          <p>A second paragraph, present so that the page has enough prose for the
+          readability extractor to treat it as an article worth archiving at all,
+          rather than discarding it as an empty or boilerplate document.</p>
+          </article>
+          </body>
+          </html>
+
+    - name: Remove any leftover helper container
+      ansible.builtin.command:
+        cmd: "docker rm -f {{ readeck_verify_helper_identifier }}"
+      register: readeck_helper_removal
+      changed_when: readeck_helper_removal.rc == 0
+      failed_when: false
+
+    # The helper is started through the docker CLI rather than
+    # community.docker.docker_container, because the ansible-lint environment
+    # used by pre-commit does not have the community.docker collection and
+    # would fail this playbook's syntax check.
+    #
+    # It is attached to the role's own container network so that Readeck can
+    # resolve it by name, and it also publishes a port on the host purely so
+    # that this playbook can wait for it to become ready.
+    - name: Start the helper container on the Readeck container network
+      ansible.builtin.command:
+        cmd: >-
+          docker run --detach
+          --name={{ readeck_verify_helper_identifier }}
+          --network={{ readeck_defaults.readeck_identifier }}
+          --publish=127.0.0.1:{{ readeck_verify_helper_host_bind_port }}:80
+          --volume={{ readeck_verify_helper_root }}:/usr/share/nginx/html:ro
+          docker.io/library/nginx:alpine
+      changed_when: true
+
+    - name: Inspect the helper container
+      ansible.builtin.command:
+        cmd: "docker inspect {{ readeck_verify_helper_identifier }}"
+      register: readeck_helper_inspection
+      changed_when: false
+
+    - name: Assert the helper container is attached to the Readeck network
+      ansible.builtin.assert:
+        that:
+          - (readeck_helper_inspection.stdout | from_json)[0].State.Running | bool
+          - readeck_defaults.readeck_identifier in (readeck_helper_inspection.stdout | from_json)[0].NetworkSettings.Networks
+        fail_msg: "The helper container is not running on the Readeck container network"
+        success_msg: "The helper container runs on the Readeck container network"
+
+    - name: Wait for the helper to serve the fixture page (up to 60s)
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ readeck_verify_helper_host_bind_port }}/"
+        method: GET
+        status_code: [200, 404, 502, 503]
+        return_content: true
+      register: readeck_helper_page
+      until: readeck_helper_page.status == 200
+      retries: 30
+      delay: 2
+
+    - name: Assert the helper serves the fixture page
+      ansible.builtin.assert:
+        that: readeck_verify_fixture_sentence in readeck_helper_page.content
+        fail_msg: "The helper did not serve the expected fixture page"
+        success_msg: "The helper serves the fixture page"
+
+    # Readeck authenticates API calls with a bearer token obtained through an
+    # OAuth flow, or with the session cookie of a logged-in browser. The latter
+    # needs nothing but the account created above, so the scenario logs in the
+    # way a browser would and reuses the session for the API calls below.
+    - name: Log in to Readeck
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/login"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          username: "{{ readeck_verify_username }}"
+          password: "{{ readeck_verify_password }}"
+        status_code: [200, 302, 303, 401, 403]
+        follow_redirects: all
+      register: readeck_login
+
+    - name: Assert the login succeeded
+      ansible.builtin.assert:
+        that:
+          - readeck_login.status == 200
+          - "'sxid' in readeck_login.cookies"
+          - readeck_login.cookies_string | length > 0
+        fail_msg: >-
+          Logging in to Readeck failed with status
+          {{ readeck_login.status | default('no response') }} at {{ readeck_login.url | default('no url') }}
+        success_msg: "Logged in to Readeck as '{{ readeck_verify_username }}'"
+
+    # Only read the session out of a response that actually succeeded, so that
+    # a failed login cannot be mistaken for an anonymous but usable session.
+    # Wrong credentials are answered with 401 and set no cookie at all, so the
+    # assertion above is what keeps this from being a no-op.
+    #
+    # The uri module of this ansible-core has no `cookies` parameter, but it
+    # hands back `cookies_string`, which is exactly a Cookie header value.
+    - name: Keep the Readeck session
+      ansible.builtin.set_fact:
+        readeck_verify_session: "{{ readeck_login.cookies_string }}"
+      when: readeck_login.status == 200
+
+    - name: Query the Readeck profile with the session
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/api/profile"
+        method: GET
+        headers:
+          Accept: application/json
+          Cookie: "{{ readeck_verify_session }}"
+        status_code: [200, 401, 403]
+        return_content: true
+      register: readeck_profile
+
+    - name: Assert the session authenticates against the API
+      ansible.builtin.assert:
+        that:
+          - readeck_profile.status == 200
+          - "'admin' in readeck_profile.json.provider.roles"
+        fail_msg: "The Readeck session does not authenticate against the API ({{ readeck_profile.status }})"
+        success_msg: "The Readeck session authenticates against the API with the admin role"
+
+    # The actual functional probe. Readeck is asked to bookmark the fixture
+    # page, which makes it fetch the URL over its own container network, run
+    # the page through its extraction pipeline and store the result in its
+    # database. Everything below reads that result back out.
+    - name: Create a bookmark for the fixture page
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/api/bookmarks"
+        method: POST
+        headers:
+          Accept: application/json
+          Cookie: "{{ readeck_verify_session }}"
+        body_format: json
+        body:
+          url: "http://{{ readeck_verify_helper_identifier }}/"
+        status_code: [200, 201, 202, 401, 403, 422]
+        return_content: true
+      register: readeck_bookmark_created
+      changed_when: readeck_bookmark_created.status == 202
+
+    - name: Assert the bookmark was accepted
+      ansible.builtin.assert:
+        that:
+          - readeck_bookmark_created.status == 202
+          - readeck_bookmark_created.bookmark_id | default('') | length > 0
+        fail_msg: >-
+          Readeck did not accept the bookmark (status
+          {{ readeck_bookmark_created.status | default('no response') }})
+        success_msg: "Readeck accepted the bookmark {{ readeck_bookmark_created.bookmark_id }}"
+
+    # Extraction runs in a background worker, so the bookmark is created before
+    # its article exists. `loaded` turning true is Readeck reporting that the
+    # worker is done with it.
+    - name: Wait for Readeck to finish extracting the bookmark (up to 150s)
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/api/bookmarks/{{ readeck_bookmark_created.bookmark_id }}"
+        method: GET
+        headers:
+          Accept: application/json
+          Cookie: "{{ readeck_verify_session }}"
+        status_code: [200, 404]
+        return_content: true
+      register: readeck_bookmark
+      until: readeck_bookmark.status == 200 and (readeck_bookmark.json.loaded | default(false) | bool)
+      retries: 30
+      delay: 5
+
+    - name: Assert the bookmark was extracted and persisted
+      ansible.builtin.assert:
+        that:
+          - readeck_bookmark.status == 200
+          - readeck_bookmark.json.loaded | bool
+          - readeck_bookmark.json.state == 0
+          - readeck_bookmark.json.has_article | bool
+          - readeck_bookmark.json.word_count > 0
+          - readeck_verify_helper_identifier in readeck_bookmark.json.url
+        fail_msg: >-
+          Readeck did not extract the bookmark (state
+          {{ readeck_bookmark.json.state | default('unknown') }})
+        success_msg: >-
+          Readeck extracted {{ readeck_bookmark.json.word_count }} words
+          from the fixture page
+
+    - name: Fetch the article Readeck stored for the bookmark
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/api/bookmarks/{{ readeck_bookmark_created.bookmark_id }}/article"
+        method: GET
+        headers:
+          Accept: application/json
+          Cookie: "{{ readeck_verify_session }}"
+        status_code: [200, 404]
+        return_content: true
+      register: readeck_article
+
+    - name: Assert the stored article is the content of the fixture page
+      ansible.builtin.assert:
+        that:
+          - readeck_article.status == 200
+          - readeck_verify_fixture_sentence in readeck_article.content
+        fail_msg: "The article Readeck stored does not contain the text of the fixture page"
+        success_msg: "The article Readeck stored is the content of the fixture page"
+
+    # Reading the bookmark back through a different endpoint than the one that
+    # created it covers the storage round trip in both directions.
+    - name: List the bookmarks through the Readeck API
+      ansible.builtin.uri:
+        url: "{{ readeck_verify_base_url }}/api/bookmarks"
+        method: GET
+        headers:
+          Accept: application/json
+          Cookie: "{{ readeck_verify_session }}"
+        status_code: [200, 401, 403]
+        return_content: true
+      register: readeck_bookmarks
+
+    - name: Assert the bookmark is listed
+      ansible.builtin.assert:
+        that:
+          - readeck_bookmarks.status == 200
+          - readeck_bookmark_created.bookmark_id in (readeck_bookmarks.json | map(attribute='id') | list)
+        fail_msg: "The created bookmark was not returned by the bookmark listing"
+        success_msg: "The created bookmark was written to and read back from the database"
+
+    - name: Remove the helper container
+      ansible.builtin.command:
+        cmd: "docker rm -f {{ readeck_verify_helper_identifier }}"
+      register: readeck_helper_cleanup
+      changed_when: readeck_helper_cleanup.rc == 0
+      failed_when: false
+
+    - name: Show Readeck verification summary
       ansible.builtin.debug:
         msg:
           - "Readeck systemd: {{ readeck_service.status.ActiveState }}"
-          - "Readeck HTTP: {{ readeck_endpoint.status }}"
+          - "Version: {{ readeck_api_info.json.version.canonical }}"
+          - "Anonymous root redirect: {{ readeck_root.location }}"
+          - "API session role: {{ readeck_profile.json.provider.roles | join(', ') }}"
+          - "Bookmark: {{ readeck_bookmark_created.bookmark_id }}"
+          - "Extracted words: {{ readeck_bookmark.json.word_count }}"
