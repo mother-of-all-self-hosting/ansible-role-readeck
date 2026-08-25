@@ -265,7 +265,7 @@
 
     - name: Inspect the helper container
       ansible.builtin.command:
-        cmd: "docker inspect {{ readeck_verify_helper_identifier }}"
+        cmd: "docker container inspect {{ readeck_verify_helper_identifier }}"
       register: readeck_helper_inspection
       changed_when: false
 
