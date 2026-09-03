@@ -94,10 +94,7 @@
         fail_msg: "Readeck did not answer /api/info ({{ readeck_api_info.status | default('no response') }})"
         success_msg: "Readeck answers /api/info"
 
-    # Tying the running version to `readeck_version` is what makes this
-    # scenario a real test of the version that Renovate bumps: a bump that
-    # produces an unusable or mistagged image cannot pass here.
-    - name: Assert the running version is the one the role asks for
+    - name: Assert the running Readeck is the version this role installs
       ansible.builtin.assert:
         that: readeck_api_info.json.version.canonical == readeck_defaults.readeck_version
         fail_msg: >-
@@ -115,7 +112,7 @@
       register: readeck_version_command
       changed_when: false
 
-    - name: Assert the Readeck binary reports the version the role asks for
+    - name: Assert the running Readeck is the version this role installs
       ansible.builtin.assert:
         that: readeck_defaults.readeck_version in readeck_version_command.stdout
         fail_msg: >-
