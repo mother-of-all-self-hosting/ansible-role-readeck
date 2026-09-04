@@ -100,7 +100,7 @@
       ansible.builtin.assert:
         that: readeck_defaults.readeck_version in readeck_version_command.stdout
         fail_msg: >-
-          The Readeck binary reports {{ readeck_version_command.stdout | default('nothing') }},
+          The Readeck binary reports {{ readeck_version_command.stdout | default('none') }},
           which does not mention the requested version {{ readeck_defaults.readeck_version }}
         success_msg: "The Readeck binary reports {{ readeck_version_command.stdout | trim }}"
 
