@@ -95,10 +95,8 @@
     - name: Assert the running Readeck is the version this role installs
       ansible.builtin.assert:
         that: readeck_api_info.json.version.canonical == readeck_defaults.readeck_version
-        fail_msg: >-
-          Readeck reports version {{ readeck_api_info.json.version.canonical | default('none') }},
-          but the role asks for {{ readeck_defaults.readeck_version }}
-        success_msg: "Readeck reports version {{ readeck_api_info.json.version.canonical }}"
+        fail_msg: "Readeck reports {{ readeck_api_info.json.version.canonical | default('none') }}, expected {{ readeck_defaults.readeck_version }}"
+        success_msg: "Readeck reports {{ readeck_api_info.json.version.canonical }}"
 
     # A second, independent reading of the same fact. /api/info is served by
     # the HTTP layer; this one comes from the binary in the container that the
