@@ -437,7 +437,7 @@
       changed_when: readeck_helper_cleanup.rc == 0
       failed_when: false
 
-    - name: Show Readeck verification summary
+    - name: Show the Readeck verification summary
       ansible.builtin.debug:
         msg:
           - "Readeck systemd: {{ readeck_service.status.ActiveState }}"
