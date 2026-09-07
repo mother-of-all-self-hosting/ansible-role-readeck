@@ -41,21 +41,27 @@
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
         name: readeck_defaults
 
-    - name: Wait for Readeck service to become active (up to 180s)
-      ansible.builtin.systemd:
+    - name: Wait for the Readeck systemd service to become active (up to 180s)
+      ansible.builtin.systemd_service:
         name: readeck.service
       register: readeck_service
       until: readeck_service.status.ActiveState == 'active'
       retries: 36
       delay: 5
+      # So that giving up is reported by the assertion below rather than as a
+      # wall of systemd unit properties.
+      failed_when: false
 
-    - name: Assert Readeck service is active
+    # `Restart=always` in the systemd unit means that even a container which crashes
+    # and gets restarted reads as active here, so this is a precondition rather than
+    # a result.
+    - name: Assert the Readeck systemd service is active
       ansible.builtin.assert:
         that: readeck_service.status.ActiveState == 'active'
-        fail_msg: "readeck.service not active ({{ readeck_service.status.ActiveState }})"
+        fail_msg: "readeck.service is not active ({{ readeck_service.status.ActiveState }})"
         success_msg: "readeck.service is active"
 
-    - name: Retrieve Readeck service log for debugging
+    - name: Retrieve the Readeck systemd service log for debugging
       when: readeck_debug_service_enabled | bool
       ansible.builtin.command:
         cmd: journalctl -xeu readeck.service
@@ -147,7 +153,7 @@
         success_msg: "The Readeck account '{{ readeck_verify_username }}' exists"
 
     - name: Restart Readeck so that it picks up the newly created account
-      ansible.builtin.systemd:
+      ansible.builtin.systemd_service:
         name: readeck.service
         state: restarted
       changed_when: false
