@@ -117,16 +117,16 @@
     - name: Query the version reported by the Readeck binary
       ansible.builtin.command:
         cmd: "docker exec {{ readeck_defaults.readeck_identifier }} readeck version"
-      register: readeck_version_command
+      register: readeck_version_reported
       changed_when: false
 
     - name: Assert the running Readeck is the version this role installs
       ansible.builtin.assert:
-        that: readeck_defaults.readeck_version in readeck_version_command.stdout
+        that: readeck_defaults.readeck_version in readeck_version_reported.stdout
         fail_msg: >-
-          The Readeck binary reports {{ readeck_version_command.stdout | default('none') }},
+          The Readeck binary reports {{ readeck_version_reported.stdout | default('none') }},
           which does not mention the requested version {{ readeck_defaults.readeck_version }}
-        success_msg: "The Readeck binary reports {{ readeck_version_command.stdout | trim }}"
+        success_msg: "The Readeck binary reports {{ readeck_version_reported.stdout | trim }}"
 
     # `readeck config` dumps the configuration the process is actually running
     # with, after the environment file the role rendered has been applied. This
