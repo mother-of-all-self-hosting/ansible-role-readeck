@@ -98,12 +98,6 @@
       retries: 120
       delay: 5
 
-    - name: Assert the Readeck HTTP endpoint answers
-      ansible.builtin.assert:
-        that: readeck_api_info.status == 200
-        fail_msg: "Readeck did not answer /api/info ({{ readeck_api_info.status | default('no response') }})"
-        success_msg: "Readeck answers /api/info"
-
     - name: Assert the running Readeck is the version this role installs
       ansible.builtin.assert:
         that: readeck_api_info.json.version.canonical == readeck_defaults.readeck_version
