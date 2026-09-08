@@ -248,7 +248,7 @@
     - name: Start the helper container on the Readeck container network
       ansible.builtin.command:
         cmd: >-
-          docker run --detach
+          docker run -d
           --name={{ readeck_verify_helper_identifier }}
           --network={{ readeck_defaults.readeck_identifier }}
           --publish=127.0.0.1:{{ readeck_verify_helper_host_bind_port }}:80
