@@ -64,7 +64,7 @@
     - name: Retrieve the Readeck systemd service log for debugging
       when: readeck_debug_service_enabled | bool
       ansible.builtin.command:
-        cmd: journalctl -xeu readeck.service
+        cmd: journalctl --no-pager --output=cat --unit=readeck.service
       changed_when: false
 
     - name: Wait for the Readeck HTTP endpoint to respond (up to 10m)
