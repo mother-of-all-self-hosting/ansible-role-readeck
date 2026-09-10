@@ -33,6 +33,8 @@
       Readeck extracted this sentence from a page served inside the container network
 
   tasks:
+    - name: Verify that Readeck works
+      block:
     # The role is not included in this playbook, so its defaults are not in
     # scope. Reading defaults/main.yml directly ties the version assertion
     # below.
@@ -465,3 +467,19 @@
           - "Readeck bookmark: {{ readeck_bookmark_created.bookmark_id }}"
           - "Readeck extracted words: {{ readeck_bookmark.json.word_count }}"
           - "Postgres systemd: {{ readeck_postgres_service.status.ActiveState }}"
+
+      rescue:
+        # Whatever went wrong, the reason is almost always in the systemd service log.
+        - name: Retrieve the Readeck systemd service log
+          ansible.builtin.command:
+            cmd: journalctl --no-pager --output=cat --unit=readeck.service
+          register: readeck_service_log
+          changed_when: false
+
+        - name: Show the Readeck systemd service log
+          ansible.builtin.debug:
+            var: readeck_service_log.stdout_lines
+
+        - name: Fail because verification did not pass
+          ansible.builtin.fail:
+            msg: "Readeck verification failed. The systemd service log is printed above."
