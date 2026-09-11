@@ -32,6 +32,9 @@
     readeck_verify_fixture_sentence: >-
       Readeck extracted this sentence from a page served inside the container network
 
+    readeck_verify_units:
+      - readeck.service
+
   tasks:
     - name: Verify that Readeck works
       block:
@@ -43,13 +46,14 @@
             file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
             name: readeck_defaults
 
-        - name: Wait for the Readeck systemd service to become active (up to 180s)
+        - name: Wait for the Readeck systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: readeck.service
-          register: readeck_service
-          until: readeck_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: readeck_services
+          until: readeck_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ readeck_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -57,17 +61,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the Readeck systemd service is active
+        - name: Assert the Readeck systemd services are active
           ansible.builtin.assert:
-            that: readeck_service.status.ActiveState == 'active'
-            fail_msg: "readeck.service is not active ({{ readeck_service.status.ActiveState }})"
-            success_msg: "readeck.service is active"
+            that: readeck_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(readeck_verify_units | zip(readeck_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the Readeck systemd service log for debugging
+        - name: Retrieve the Readeck systemd services log for debugging
           when: readeck_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=readeck.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ readeck_verify_units }}"
 
         - name: Wait for the Readeck HTTP endpoint to respond (up to 10m)
           ansible.builtin.uri:
@@ -430,7 +437,7 @@
         - name: Show the Readeck verification summary
           ansible.builtin.debug:
             msg:
-              - "Readeck systemd: {{ readeck_service.status.ActiveState }}"
+              - "Readeck systemd: {% for unit, state in readeck_verify_units | zip(readeck_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Readeck version: {{ readeck_api_info.json.version.canonical }}"
               - "Readeck anonymous root redirect: {{ readeck_root.location }}"
               - "Readeck API session role: {{ readeck_profile.json.provider.roles | join(', ') }}"
