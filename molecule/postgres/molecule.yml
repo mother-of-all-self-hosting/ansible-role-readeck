@@ -30,6 +30,7 @@ provisioner:
       all:
         # Helper variables
         readeck_debug_service_enabled: false
+        readeck_restarts_check_enabled: true
 
         # Variables for Readeck
         readeck_uid: 1000
