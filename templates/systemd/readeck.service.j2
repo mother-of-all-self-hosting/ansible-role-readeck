@@ -45,7 +45,10 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% for arg in readeck_container_extra_arguments %}
       {{ arg }} \
       {% endfor %}
-      {{ readeck_container_image }}
+      {{ readeck_container_image }} \
+      {% for arg in readeck_process_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
 
 {% for network in readeck_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ readeck_identifier }}
