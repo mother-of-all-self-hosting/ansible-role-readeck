@@ -115,7 +115,7 @@ To configure it, add the following configuration to your `vars.yml` file as belo
 # Specify SMTP server hostname
 readeck_environment_variables_readeck_mail_host: ""
 
-# Specify SMTP server port
+# Specify SMTP server port number
 readeck_environment_variables_readeck_mail_port: 587
 
 # Specify SMTP server username
