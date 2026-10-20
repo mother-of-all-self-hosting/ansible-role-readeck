@@ -179,3 +179,16 @@ If you want to increase the verbosity, add the following configuration to your `
 ```yaml
 readeck_environment_variables_readeck_log_level: debug
 ```
+
+### Pages on a private network cannot be bookmarked
+
+Since v0.23.3, Readeck refuses by default to fetch pages from private and local IP address ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`, `fc00::/7`, etc., in addition to the loopback addresses), so that the server cannot be used to probe your internal network. Bookmarking a page whose hostname resolves to such an address fails with an error like `ip 192.168.1.10 is blocked by rule 192.168.0.0/16`.
+
+The list can only be changed in Readeck's configuration file, which Readeck creates on its first start in the data directory (`readeck_data_path`, e.g. `/mash/readeck/data/config.toml`) and which this role does not manage. To allow such pages, add an `[extractor]` section to that file with the ranges you still want to deny, and restart the service:
+
+```toml
+[extractor]
+denied_ips = ["127.0.0.0/8", "::1/128"]
+```
+
+See [Readeck's documentation](https://readeck.org/en/docs/configuration) for details.
