@@ -124,7 +124,6 @@
             cmd: "docker exec {{ readeck_defaults.readeck_identifier }} readeck config"
           register: readeck_config_command
           changed_when: false
-          no_log: true  # the dump contains the session secret key
 
         - name: Assert the environment file rendered by the role reached the process
           ansible.builtin.assert:
