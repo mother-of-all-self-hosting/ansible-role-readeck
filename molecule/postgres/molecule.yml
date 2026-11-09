@@ -49,8 +49,8 @@ provisioner:
 
         # Variables required for Readeck to connect to the Postgres database (via Unix socket)
         readeck_database_type: postgres
-        readeck_database_username: my_database_username
-        readeck_database_password: my_database_password
+        readeck_database_username: /#@my_database_username?%
+        readeck_database_password: /#@my_database_password?%
         readeck_database_sslmode: disable
         readeck_database_name: readeck
         readeck_database_socket_enabled: true

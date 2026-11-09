@@ -142,7 +142,7 @@
               - (readeck_config_command.stdout | from_json).database.source is match('^postgres://')
               - readeck_defaults.readeck_database_socket_path_container in (readeck_config_command.stdout | from_json).database.source
               - readeck_database_name in (readeck_config_command.stdout | from_json).database.source
-              - readeck_database_username in (readeck_config_command.stdout | from_json).database.source
+              - (readeck_database_username | urlencode | replace('/', '%2F')) in (readeck_config_command.stdout | from_json).database.source
             fail_msg: "The running Readeck configuration does not match what the role rendered"
             success_msg: "The Postgres data source rendered by the role reached the Readeck process"
 
