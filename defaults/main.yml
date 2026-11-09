@@ -256,7 +256,7 @@ readeck_database_socket_path_container: /run-postgres
 readeck_database_socket_path_host: ""
 
 readeck_environment_variables_readeck_database_source: |-
-  postgres://{{ readeck_database_username }}:{{ readeck_database_password }}@
+  postgres://{{ readeck_database_username | urlencode | replace('/', '%2F') }}:{{ readeck_database_password | urlencode | replace('/', '%2F') }}@
   {%- if readeck_database_socket_enabled -%}
   localhost/{{ readeck_database_name }}?host={{ readeck_database_socket_path_container }}
   {%- else -%}
