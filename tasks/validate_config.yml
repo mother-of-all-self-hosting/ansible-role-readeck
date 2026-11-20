@@ -31,9 +31,6 @@
   with_items:
     - readeck_uid
     - readeck_gid
-    - readeck_hostname
-    - readeck_path_prefix
-    - readeck_container_network
     - readeck_database_type
 
 - name: Fail if Readeck logging level is invalid
